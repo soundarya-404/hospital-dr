@@ -1,0 +1,195 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>HospitalDR</title>
+<style>
+:root{--bg:#f4f6f9;--card:#fff;--ink:#17202a;--mut:#5d6c7b;--line:#dce2e9;--ok:#0f7a4a;--okbg:#e1f4ea;--bad:#b3261e;--badbg:#fde8e6;--warn:#8a5a00;--warnbg:#fff2d3;--acc:#0b5cab;--accbg:#e3effb}
+@media (prefers-color-scheme:dark){:root{--bg:#0e1620;--card:#162130;--ink:#e7eef5;--mut:#9db0c1;--line:#2a3a4b;--ok:#4cd38b;--okbg:#0f2f22;--bad:#ff8f86;--badbg:#3b1815;--warn:#ffd073;--warnbg:#3a2b0a;--acc:#74b6ff;--accbg:#10283f}}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,sans-serif}
+header{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;padding:14px 20px;background:var(--card);border-bottom:1px solid var(--line)}
+h1{font-size:20px;margin:0}.sub{color:var(--mut);font-size:13px}
+main{max-width:1180px;margin:0 auto;padding:16px 16px 60px}
+.card{background:var(--card);border:1px solid var(--line);border-radius:10px;padding:14px 16px;margin-bottom:14px}
+.hidden{display:none!important}
+.pill{display:inline-block;padding:2px 10px;border-radius:999px;font-size:12px;font-weight:600;border:1px solid var(--line);background:var(--card);color:var(--mut)}
+.pill.ok{background:var(--okbg);color:var(--ok);border-color:transparent}.pill.bad{background:var(--badbg);color:var(--bad);border-color:transparent}
+.pill.warn{background:var(--warnbg);color:var(--warn);border-color:transparent}.pill.acc{background:var(--accbg);color:var(--acc);border-color:transparent}
+button{font:inherit;padding:8px 14px;border-radius:8px;border:1px solid var(--line);background:var(--card);color:var(--ink);cursor:pointer}
+button:hover:not(:disabled){border-color:var(--acc)}button:disabled{opacity:.4;cursor:not-allowed}
+button.primary{background:var(--acc);color:#fff;border-color:var(--acc);font-weight:600}button.danger{color:var(--bad)}
+input,select{font:inherit;padding:8px 10px;border:1px solid var(--line);border-radius:8px;background:var(--card);color:var(--ink)}
+.bar{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+nav{display:flex;gap:6px;margin-bottom:14px;flex-wrap:wrap}nav button.on{background:var(--accbg);color:var(--acc);border-color:var(--acc)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:12px}
+.tier h3{margin:0 0 4px;font-size:15px}.tier .sys{color:var(--mut);font-size:13px;margin-bottom:8px}
+.tier dl{display:grid;grid-template-columns:auto 1fr;gap:2px 10px;margin:8px 0;font-size:13px}.tier dt{color:var(--mut)}.tier dd{margin:0;text-align:right}
+.why{font-size:12.5px;color:var(--mut);border-top:1px dashed var(--line);padding-top:8px;margin-top:6px}
+.banner{padding:12px 16px;border-radius:10px;font-weight:600;margin-bottom:14px}
+.banner.ok{background:var(--okbg);color:var(--ok)}.banner.bad{background:var(--badbg);color:var(--bad)}.banner.warn{background:var(--warnbg);color:var(--warn)}
+table{width:100%;border-collapse:collapse;font-size:13.5px}th,td{padding:7px 8px;border-bottom:1px solid var(--line);text-align:left;vertical-align:top}th{color:var(--mut);font-weight:600}
+.num{text-align:right;font-variant-numeric:tabular-nums}.mut{color:var(--mut)}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px;margin-bottom:12px}
+.kpi{border:1px solid var(--line);border-radius:8px;padding:8px 12px}.kpi b{display:block;font-size:20px}.kpi span{font-size:12px;color:var(--mut)}
+.log{font:12.5px/1.5 ui-monospace,Consolas,monospace;max-height:300px;overflow:auto}.log div{padding:2px 0;border-bottom:1px solid var(--line)}
+.lv-ERROR,.lv-ALERT{color:var(--bad)}.lv-OK{color:var(--ok)}.lv-WARN{color:var(--warn)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}@media(max-width:860px){.two{grid-template-columns:1fr}}
+ol li{margin-bottom:6px}.err{color:var(--bad);font-size:13px;margin-top:6px}
+label{display:block;font-size:13px;color:var(--mut);margin:8px 0 2px}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>HospitalDR</h1><div class="sub">Tiered disaster-recovery drill &middot; synthetic data only &middot; runs fully offline</div></div>
+  <div class="bar" id="badges"></div>
+</header>
+<main>
+  <div id="login" class="card hidden" style="max-width:380px;margin:40px auto">
+    <h2 style="margin-top:0">Sign in</h2>
+    <p class="mut" style="font-size:13px">Access to backup and restore controls is limited to named roles, and every action is logged.</p>
+    <label>User</label>
+    <select id="lu" style="width:100%"><option value="asha">asha (Admin)</option><option value="ravi">ravi (Operator)</option><option value="meena">meena (Auditor)</option></select>
+    <label>PIN</label><input id="lp" type="password" style="width:100%" placeholder="demo PINs are in README.md">
+    <div style="margin-top:12px"><button class="primary" onclick="login()">Sign in</button></div>
+    <div id="lerr" class="err"></div>
+  </div>
+
+  <div id="app" class="hidden">
+    <nav id="tabs"></nav>
+
+    <section id="t-dash">
+      <div id="banner" class="banner ok"></div>
+      <div class="card"><div class="bar" id="actions"></div><div id="aerr" class="err"></div></div>
+      <div class="grid" id="tiers"></div>
+      <div class="two" style="margin-top:14px">
+        <div class="card"><h3 style="margin-top:0">Drill report: target vs measured</h3><div id="report"></div></div>
+        <div class="card"><h3 style="margin-top:0">Detection &amp; event log</h3><div class="log" id="events"></div></div>
+      </div>
+      <div class="card"><h3 style="margin-top:0">Drill history <span class="mut" style="font-weight:400;font-size:13px">(repeatability: every recovery is kept)</span></h3><div id="history"></div></div>
+    </section>
+
+    <section id="t-obj" class="hidden"><div class="card" id="objectives"></div></section>
+    <section id="t-run" class="hidden"><div class="card" id="runbook"></div></section>
+    <section id="t-sec" class="hidden"><div class="card" id="security"></div></section>
+    <section id="t-cost" class="hidden"><div class="card" id="cost"></div></section>
+    <section id="t-audit" class="hidden"><div class="card">
+      <div class="bar" style="margin-bottom:10px"><b>Audit log</b><button onclick="verifyAudit()">Verify log integrity</button><span id="vres"></span></div>
+      <div id="audit"></div></div></section>
+  </div>
+</main>
+
+<script>
+const $=s=>document.querySelector(s);
+let token=sessionStorage.getItem('tok'),me=JSON.parse(sessionStorage.getItem('me')||'null'),S=null,tab='dash';
+const esc=s=>String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function dur(s){if(s==null)return '—';if(s<1)return (s*1000).toFixed(0)+' ms';if(s<60)return s.toFixed(1)+' s';if(s<3600)return (s/60).toFixed(s%60?1:0)+' min';if(s<86400)return (s/3600).toFixed(s%3600?1:0)+' h';return (s/86400).toFixed(0)+' d'}
+async function api(p,m='GET',b){const r=await fetch(p,{method:m,headers:{'Content-Type':'application/json',...(token?{Authorization:'Bearer '+token}:{})},body:b?JSON.stringify(b):undefined});let j={};try{j=await r.json()}catch(e){}
+  if(r.status===401&&p!=='/api/login'){logout(true)}if(!r.ok)throw new Error(j.error||('HTTP '+r.status));return j}
+async function login(){try{const j=await api('/api/login','POST',{user:$('#lu').value,pin:$('#lp').value});token=j.token;me=j;sessionStorage.setItem('tok',token);sessionStorage.setItem('me',JSON.stringify(j));$('#lerr').textContent='';start()}catch(e){$('#lerr').textContent=e.message}}
+function logout(){token=null;me=null;sessionStorage.clear();$('#app').classList.add('hidden');$('#login').classList.remove('hidden')}
+function start(){$('#login').classList.add('hidden');$('#app').classList.remove('hidden');buildTabs();refresh()}
+function buildTabs(){const t=[['dash','Dashboard'],['obj','Recovery objectives'],['run','Runbook'],['cost','Cost estimate'],['sec','Security']];if(me&&(me.role==='Admin'||me.role==='Auditor'))t.push(['audit','Audit log']);
+  $('#tabs').innerHTML=t.map(([k,n])=>`<button class="${k===tab?'on':''}" onclick="setTab('${k}')">${n}</button>`).join('');
+  ['dash','obj','run','cost','sec','audit'].forEach(k=>$('#t-'+k).classList.toggle('hidden',k!==tab));if(tab==='audit')loadAudit();if(tab==='sec')loadSec()}
+function setTab(k){tab=k;buildTabs()}
+async function act(name,confirmMsg){if(confirmMsg&&!confirm(confirmMsg))return;$('#aerr').textContent='';try{await api('/api/'+name,'POST',{});await refresh()}catch(e){$('#aerr').textContent=e.message;refresh()}}
+async function refresh(){if(!token)return;try{S=await api('/api/status');render()}catch(e){}}
+
+function render(){
+  $('#badges').innerHTML=`<span class="pill ${S.online?'acc':'ok'}">${S.online?'Internet: online':'Internet: OFFLINE - still working'}</span>
+   <span class="pill">${esc(me.user)} &middot; ${esc(me.role)}</span><span class="pill ${S.paused?'warn':'ok'}">Auto-backup: ${S.paused?'paused':'running'}</span><button onclick="logout()">Sign out</button>`;
+  const P=new Set(S.perms),b=(n,l,cls='',cm)=>`<button class="${cls}" ${P.has(n)&&!S.drill_running?'':'disabled'} onclick="act('${n}'${cm?`,'${cm}'`:''})">${l}</button>`;
+  $('#actions').innerHTML=b('seed','1. Reset &amp; load synthetic data','','This wipes all data and DR backups and loads fresh synthetic data. Continue?')+
+    b('drill','&#9654; Run full drill','primary')+'<span class="mut">or step by step:</span>'+b('backup','Backup now')+b('activity','Simulate live traffic')+
+    b('fail','Fail main data centre','danger')+b('restore','Restore')+b('corrupt','Corrupt newest Tier-0 backup (test)')+b('pause',S.paused?'Resume auto-backup':'Pause auto-backup');
+  const inc=S.incident,bn=$('#banner');
+  if(!S.seeded){bn.className='banner warn';bn.textContent='No data yet. Click "Reset & load synthetic data", then "Run full drill".'}
+  else if(S.restoring_tier!=null){bn.className='banner warn';bn.textContent=`RESTORING - Tier ${S.restoring_tier} in progress (priority order: Tier 0 first)`}
+  else if(inc&&!inc.restored){bn.className='banner bad';bn.textContent=`INCIDENT: main data centre down since ${inc.failed_at}${inc.detected_s!=null?` - detected after ${dur(inc.detected_s)}`:' - not yet detected'}. Click Restore.`}
+  else if(inc&&inc.restored&&S.report){bn.className='banner ok';bn.textContent=`RECOVERED: all tiers back in ${dur(S.report.total_recovery_s)} - overall ${S.report.passed?'PASS':'FAIL'} against targets.`}
+  else{bn.className='banner ok';bn.textContent='All tiers healthy. Backups are running on schedule.'}
+  $('#tiers').innerHTML=S.tiers.map(t=>{const c={healthy:'ok',restored:'ok',failed:'bad',restoring:'warn',empty:''}[t.state];
+    return `<div class="card tier" style="margin:0"><div class="bar" style="justify-content:space-between"><h3>${esc(t.name)}</h3><span class="pill ${c}">${t.state.toUpperCase()}</span></div>
+    <div class="sys">${esc(t.systems)}</div><dl><dt>Records</dt><dd>${t.rows??'—'}</dd><dt>Last backup</dt><dd>${t.last_backup_age==null?'—':dur(t.last_backup_age)+' ago'}</dd>
+    <dt>Target RTO</dt><dd>${dur(t.rto)}</dd><dt>Target RPO</dt><dd>${dur(t.rpo)}</dd><dt>Backup schedule</dt><dd>${esc(t.prod)} <span class="mut">(demo: ${t.interval}s)</span></dd><dt>Versions kept</dt><dd>${t.versions}</dd></dl>
+    <div class="why">${esc(t.why)}</div></div>`}).join('');
+  $('#report').innerHTML=renderReport(S.report);
+  $('#events').innerHTML=S.events.map(e=>`<div class="lv-${e.level}">${esc(e.ts.slice(11))} [${e.level}] ${esc(e.msg)}</div>`).join('')||'<span class="mut">No events yet.</span>';
+  $('#history').innerHTML=renderHistory(S.history);
+  $('#objectives').innerHTML=renderObjectives(S.systems);
+}
+function renderHistory(h){
+  if(!h||!h.length)return '<p class="mut">No recoveries yet.</p>';
+  return '<table><tr><th>Finished</th><th>Run by</th><th>Type</th><th>Result</th><th class="num">Detected after</th><th class="num">Recovered after</th><th class="num">Rows lost</th><th></th></tr>'+
+   h.map(x=>`<tr><td>${esc(x.finished)}</td><td>${esc(x.by)}</td><td>${esc(x.kind)}</td><td>${pf(x.passed)}</td><td class="num">${dur(x.detection_s)}</td><td class="num">${dur(x.total_recovery_s)}</td><td class="num">${x.rows_lost==null?'n/a':x.rows_lost}</td><td>${x.older_backup?'<span class="pill warn">older backup used</span>':''}</td></tr>`).join('')+'</table>'}
+function renderObjectives(sys){
+  if(!sys)return '';
+  return `<h2 style="margin-top:0">Recovery objective for each system</h2>
+  <p class="mut">Objectives are set by clinical risk, not by convenience. These are the team's proposed targets, to be agreed with the hospital's clinical and IT leads. RTO = how long the system may be down; RPO = how much recent data may be lost.</p>
+  <table><tr><th>System</th><th>Tier</th><th class="num">RTO</th><th class="num">RPO</th><th>Clinical justification</th><th>Criticality justification</th><th class="num">Records now</th></tr>
+  ${sys.map(s=>`<tr><td><b>${esc(s.system)}</b><div class="mut" style="font-size:12px">${esc(s.table)}</div></td><td>${s.tier}</td><td class="num">${dur(s.rto)}</td><td class="num">${dur(s.rpo)}</td><td>${esc(s.clinical)}</td><td>${esc(s.critical)}</td><td class="num">${s.rows??'—'}</td></tr>`).join('')}</table>
+  <p class="mut" style="font-size:13px">Restore order follows the tiers: 0, then 1, 2, 3. Tighter targets need more frequent backups and a faster standby, so cost rises with each step up; that is why only Tier 0 gets the strictest targets.</p>`}
+async function loadSec(){try{const j=await api('/api/security');const c={verified:'ok',declared:'acc',off:'warn',unknown:'warn',FAILED:'bad'};
+  $('#security').innerHTML='<h2 style="margin-top:0">Safety and security checks (live)</h2><p class="mut">"Verified" means the app just checked it. "Declared" means it is a configuration statement that cannot be technically enforced on one laptop.</p><table><tr><th>Requirement</th><th>Status</th><th>Detail</th></tr>'+
+   j.checks.map(x=>`<tr><td><b>${esc(x.name)}</b></td><td><span class="pill ${c[x.status]||''}">${esc(x.status.toUpperCase())}</span></td><td>${esc(x.detail)}</td></tr>`).join('')+'</table>'}catch(e){$('#security').textContent=e.message}}
+async function downloadReport(){try{const r=await fetch('/api/report',{headers:{Authorization:'Bearer '+token}});if(!r.ok){const j=await r.json();throw new Error(j.error)}
+  const u=URL.createObjectURL(await r.blob());const a=document.createElement('a');a.href=u;a.download='drill-report.md';a.click();URL.revokeObjectURL(u)}catch(e){alert(e.message)}}
+const pf=ok=>`<span class="pill ${ok?'ok':'bad'}">${ok?'PASS':'FAIL'}</span>`;
+function renderReport(r){
+  if(!r)return '<p class="mut">No recovery has been measured yet. Click <b>Run full drill</b>.</p>';
+  const proj=r.throughput_mb_s>0?(50*1000/r.throughput_mb_s):null;
+  return `<div class="kpis"><div class="kpi"><b>${r.passed?'PASS':'FAIL'}</b><span>overall vs targets</span></div>
+   <div class="kpi"><b>${dur(r.detection_s)}</b><span>failure detected after</span></div><div class="kpi"><b>${dur(r.total_recovery_s)}</b><span>all tiers recovered</span></div>
+   <div class="kpi"><b>${r.throughput_mb_s} MB/s</b><span>measured restore speed</span></div></div>
+   <table><tr><th>Tier</th><th class="num">RTO target</th><th class="num">RTO measured</th><th></th><th class="num">RPO target</th><th class="num">RPO measured</th><th></th><th class="num">Rows lost</th><th>Verified</th></tr>
+   ${r.tiers.map(t=>t.failed?`<tr><td>Tier ${t.tier}</td><td colspan="8" class="lv-ERROR">NOT RESTORED: ${esc((t.notes||[]).join('; ')||'no backup')}</td></tr>`:
+   `<tr><td>Tier ${t.tier}${t.fallback?' <span class="pill warn">older backup</span>':''}</td><td class="num">${dur(t.rto_target)}</td><td class="num">${dur(t.rto_measured)}</td><td>${pf(t.rto_pass)}</td>
+   <td class="num">${dur(t.rpo_target)}</td><td class="num">${dur(t.rpo_measured)}</td><td>${pf(t.rpo_pass)}</td><td class="num">${t.records_lost==null?'n/a':t.records_lost}</td><td>${t.integrity} <span class="mut">(sha256, decrypt, integrity check, row counts)</span></td></tr>`).join('')}</table>
+   <p class="mut" style="font-size:12.5px">RTO = failure to restored and verified. RPO = age of the newest usable backup at failure. Data here is tiny, so restores are very fast${proj?`; at this measured speed a 50&nbsp;GB database would take about ${dur(proj)} (rough linear estimate only)`:''}.</p><button onclick="downloadReport()">Download report (.md)</button>`}
+
+async function loadAudit(){try{const j=await api('/api/audit');$('#audit').innerHTML='<table><tr><th>Time</th><th>User</th><th>Role</th><th>Action</th><th>Detail</th><th></th></tr>'+j.entries.map(e=>`<tr><td>${esc(e.ts)}</td><td>${esc(e.user)}</td><td>${esc(e.role)}</td><td>${esc(e.action)}</td><td>${esc(e.detail)}</td><td>${e.ok?'':'<span class="pill bad">denied/failed</span>'}</td></tr>`).join('')+'</table>'}catch(e){$('#audit').textContent=e.message}}
+async function verifyAudit(){try{const j=await api('/api/audit/verify');$('#vres').innerHTML=j.intact?`<span class="pill ok">Chain intact (${j.entries} entries)</span>`:`<span class="pill bad">TAMPERED at entry ${j.broken_at}</span>`}catch(e){$('#vres').textContent=e.message}}
+
+$('#runbook').innerHTML=`<h2 style="margin-top:0">Runbook: recover the hospital after a data-centre failure</h2>
+<p class="mut">Written for a team of three with no specialist knowledge. Roles: <b>Incident lead</b> (Admin), <b>Operator</b>, <b>Scribe/Auditor</b>. Rehearse monthly.</p>
+<ol>
+<li><b>Detect.</b> The dashboard banner turns red (INCIDENT) and the event log shows <code>FAILURE DETECTED</code>. Scribe writes down the time.</li>
+<li><b>Declare.</b> Incident lead says out loud: "Data-centre failure declared. Restoring in priority order." Switch the ward desks to downtime procedures (paper forms).</li>
+<li><b>Sign in</b> as an Operator or Admin (named accounts only; every action is logged).</li>
+<li><b>Restore.</b> Click <b>Restore</b>. Tiers come back in order: 0 (life-critical), 1 (clinical), 2 (operations), 3 (archive). Do nothing else while it runs.</li>
+<li><b>Verify.</b> Each tier is checked automatically: file checksum, decryption, database integrity, and record counts against the backup manifest. Green "verified" on every row = good.</li>
+<li><b>Confirm clinically.</b> A nurse opens 3 known patients and checks allergies and blood group against paper. Only then say "Tier 0 back in service".</li>
+<li><b>Report.</b> Read the target vs measured table. Note any FAIL, any "older backup" flag, and the records lost. Scribe saves a screenshot and the audit log.</li>
+<li><b>Review.</b> Auditor signs in and clicks <b>Verify log integrity</b> to confirm nobody altered the audit trail.</li>
+</ol>
+<h3>If something goes wrong</h3>
+<table><tr><th>Symptom</th><th>Do this</th></tr>
+<tr><td>"older backup" flag or a rejected-backup warning</td><td>The newest backup was damaged; the app used the previous version automatically. Expect more data loss (higher RPO). Record it and investigate.</td></tr>
+<tr><td>A tier says NOT RESTORED</td><td>No usable backup was found. Check the DR folder shown in the log, plug in the second backup disk, then click Restore again.</td></tr>
+<tr><td>Dashboard will not open</td><td>On any spare laptop with the DR folder, run <code>python app.py</code> and open http://127.0.0.1:8000.</td></tr>
+<tr><td>Button is greyed out</td><td>Your role is not allowed to do it. Ask the Incident lead (Admin).</td></tr>
+<tr><td>Wrong PIN / locked out</td><td>Ask the Admin. Failed logins are recorded in the audit log.</td></tr></table>`;
+
+function calc(){const g=id=>parseFloat($(id).value)||0,warm=$('#c_type').value==='warm';
+  const stor=g('#c_gb')*g('#c_rate'),vm=warm?g('#c_vm'):0,tot=stor+vm+g('#c_oth'),bud=g('#c_bud')*100000/12;
+  $('#c_out').innerHTML=`<div class="kpis"><div class="kpi"><b>&#8377;${Math.round(tot).toLocaleString('en-IN')}</b><span>standby cost per month</span></div>
+  <div class="kpi"><b>${bud?(tot/bud*100).toFixed(1):'—'}%</b><span>of monthly IT budget</span></div><div class="kpi"><b>&#8377;${Math.round(bud).toLocaleString('en-IN')}</b><span>monthly IT budget</span></div></div>
+  <p class="mut" style="font-size:13px">Formula: (backup GB &times; &#8377;/GB-month) + ${warm?'standby VM + ':'(no VM: cold standby) + '}network/other. ${warm?'Warm standby restores faster (shorter RTO) but costs more.':'Cold standby is cheapest but you must start servers during recovery (longer RTO).'}</p>`}
+$('#cost').innerHTML=`<h2 style="margin-top:0">Monthly cost of the standby arrangement</h2>
+<p class="mut">All numbers below are <b>editable assumptions, not quotes</b>. Replace them with figures from your cloud provider's pricing calculator (India region) before presenting.</p>
+<div class="grid" style="max-width:760px"><div><label>Standby type</label><select id="c_type" oninput="calc()"><option value="cold">Cold (storage only)</option><option value="warm">Warm (small VM always on)</option></select></div>
+<div><label>Backup data stored (GB)</label><input id="c_gb" type="number" value="200" oninput="calc()"></div>
+<div><label>Storage price (&#8377; per GB-month) - assumption</label><input id="c_rate" type="number" step="0.1" value="2" oninput="calc()"></div>
+<div><label>Standby VM (&#8377;/month) - assumption</label><input id="c_vm" type="number" value="1500" oninput="calc()"></div>
+<div><label>Network / other (&#8377;/month) - assumption</label><input id="c_oth" type="number" value="500" oninput="calc()"></div>
+<div><label>Hospital annual IT budget (&#8377; lakh) - assumption</label><input id="c_bud" type="number" value="20" oninput="calc()"></div></div>
+<div id="c_out" style="margin-top:14px"></div>`;
+calc();
+
+setInterval(()=>{if(token&&!document.hidden){refresh();if(tab==='audit')loadAudit();if(tab==='sec')loadSec()}},1500);
+if(token&&me)start();else $('#login').classList.remove('hidden');
+</script>
+</body>
+</html>
